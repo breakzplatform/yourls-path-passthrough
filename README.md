@@ -66,3 +66,7 @@ until their cache expires. That applies to passthrough URLs as much as to plain 
 ## License
 
 MIT. Contact: dev@joseli.to.
+
+## Caveats
+
+- **Do not create an `uninstall.php` file:** In setups where this plugin is pinned as active (like the `ts-golink-yourls` stack), clicking "Deactivate" in the admin panel will run the uninstallation script and wipe all plugin data without actually deactivating the plugin.
