@@ -10,6 +10,12 @@ Author URI: https://github.com/breakzplatform
 
 if ( !defined( 'YOURLS_ABSPATH' ) ) die();
 
+yourls_add_action( 'plugins_loaded', 'path_passthrough_load_textdomain' );
+
+function path_passthrough_load_textdomain() {
+    yourls_load_custom_textdomain( 'path-passthrough', __DIR__ . '/languages' );
+}
+
 yourls_add_filter( 'get_request', 'path_passthrough_get_request' );
 yourls_add_action( 'redirect_shorturl', 'path_passthrough_arm' );
 yourls_add_filter( 'redirect_location', 'path_passthrough_redirect_location' );
