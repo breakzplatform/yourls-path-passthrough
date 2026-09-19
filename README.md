@@ -13,7 +13,7 @@ redirects: anything after the keyword is passed through to the long URL.
 |---|---|
 | `sho.rt/search/docs?q=yourls` | `https://example.com/search/docs?lang=en&q=yourls#top` |
 
-Tested on YOURLS 1.10.6 with PHP 8.5. Needs PHP 8.0 or later.
+Tested on YOURLS 1.10.6 with PHP 8.5. Requires YOURLS 1.10.5+ and PHP 8.1+.
 
 ## Install
 
