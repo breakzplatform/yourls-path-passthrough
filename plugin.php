@@ -28,6 +28,9 @@ yourls_add_filter( 'redirect_location', 'path_passthrough_redirect_location' );
 // See the "Sanitizer" section of README.md for why this is safe.
 yourls_add_filter( 'sanitize_url', 'path_passthrough_restore_templates', 10, 2 );
 
+// Same cap as yourls_sanitize_keyword() puts on custom keywords
+const PATH_PASSTHROUGH_MAX_KEYWORD_LENGTH = 199;
+
 /**
  * Pending passthrough for this request: ['keyword', 'path', 'query', 'armed'], or null.
  */
@@ -44,6 +47,9 @@ function path_passthrough_state( ?array $state = null, bool $reset = false ): ?a
 /**
  * Turn "foo/bar/baz" into "foo" when "foo" is a short URL, remembering "bar/baz" for later.
  *
+ * The longest prefix that is a keyword wins, so with both "foo" and "foo/bar" saved (keywords
+ * that contain slashes), "foo/bar/baz" goes to "foo/bar" with "baz" passed through.
+ *
  * Requests the loader already understands (an existing keyword or page, including keywords
  * that contain slashes, "prefix-n-shorten" URLs, plain keywords) are returned untouched.
  */
@@ -59,9 +65,7 @@ function path_passthrough_get_request( $request ) {
         return $request;
     }
 
-    $keyword = substr( $request, 0, $separator );
-    $path = substr( $request, $separator + 1 );
-    if ( $path === '' ) {
+    if ( substr( $request, $separator + 1 ) === '' ) {
         return $request;
     }
 
@@ -69,18 +73,31 @@ function path_passthrough_get_request( $request ) {
         return $request;
     }
 
-    if ( !yourls_keyword_is_taken( $keyword ) ) {
-        return $request;
+    $segments = explode( '/', $request );
+    for ( $count = count( $segments ) - 1; $count >= 1; $count-- ) {
+        $keyword = implode( '/', array_slice( $segments, 0, $count ) );
+        // Keywords are capped at 199 characters: longer prefixes would only cost a query each
+        if ( strlen( $keyword ) > PATH_PASSTHROUGH_MAX_KEYWORD_LENGTH || !yourls_keyword_is_taken( $keyword ) ) {
+            continue;
+        }
+
+        $path = implode( '/', array_slice( $segments, $count ) );
+        // "foo/bar/" with "foo/bar" saved: a plain request with a trailing slash, the loader's job
+        if ( $path === '' ) {
+            return $request;
+        }
+
+        path_passthrough_state( [
+            'keyword' => yourls_sanitize_keyword( $keyword ),
+            'path'    => $path,
+            'query'   => isset( $_SERVER['QUERY_STRING'] ) ? (string) $_SERVER['QUERY_STRING'] : '',
+            'armed'   => false,
+        ] );
+
+        return $keyword;
     }
 
-    path_passthrough_state( [
-        'keyword' => yourls_sanitize_keyword( $keyword ),
-        'path'    => $path,
-        'query'   => isset( $_SERVER['QUERY_STRING'] ) ? (string) $_SERVER['QUERY_STRING'] : '',
-        'armed'   => false,
-    ] );
-
-    return $keyword;
+    return $request;
 }
 
 /**

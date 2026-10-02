@@ -14,7 +14,7 @@ if ( !function_exists( 'yourls_add_action' ) ) {
     function yourls_do_action( $hook, ...$args ) {}
     function yourls_load_custom_textdomain() {}
     function yourls__( $text, $domain = 'default' ) { return $text; }
-    function yourls_keyword_is_taken() { return false; }
+    function yourls_keyword_is_taken( $keyword ) { return in_array( $keyword, $GLOBALS['test_keywords'] ?? [], true ); }
     function yourls_is_page() { return false; }
     function yourls_sanitize_keyword( $k ) { return $k; }
 }
@@ -299,6 +299,45 @@ function safe_has_template( $url ) {
 run_test( 'plain URL (false)', safe_has_template( 'https://example.com/' ), false );
 run_test( 'single \'{\' alone (false)', safe_has_template( 'https://example.com/{' ), false );
 run_test( '\'{{\' present (true)', safe_has_template( 'https://example.com/{{' ), true );
+
+
+// -----------------------------------------------------------------------------
+// Group: get_request (which prefix is the keyword)
+// -----------------------------------------------------------------------------
+test_group( 'Get Request' );
+
+function request_result( array $keywords, string $request ): array {
+    $GLOBALS['test_keywords'] = $keywords;
+    path_passthrough_state( null, true );
+    $returned = path_passthrough_get_request( $request );
+    $state = path_passthrough_state();
+    path_passthrough_state( null, true );
+    $GLOBALS['test_keywords'] = [];
+    return [ $returned, $state['path'] ?? null ];
+}
+
+run_test( 'first segment is the keyword',
+    request_result( [ 'gh' ], 'gh/tailscale/golink' ), [ 'gh', 'tailscale/golink' ] );
+run_test( 'longest keyword wins over a shorter one',
+    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma/foo' ), [ 'collie/bulma', 'foo' ] );
+run_test( 'longest keyword wins regardless of save order',
+    request_result( [ 'collie/bulma', 'collie' ], 'collie/bulma/foo/bar' ), [ 'collie/bulma', 'foo/bar' ] );
+run_test( 'shorter keyword still used when the longer one does not match',
+    request_result( [ 'collie', 'collie/bulma' ], 'collie/other/foo' ), [ 'collie', 'other/foo' ] );
+run_test( 'deep slash keyword',
+    request_result( [ 'a', 'a/b/c' ], 'a/b/c/d' ), [ 'a/b/c', 'd' ] );
+run_test( 'exact slash keyword is left to the loader',
+    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma' ), [ 'collie/bulma', null ] );
+run_test( 'slash keyword with trailing slash is left to the loader',
+    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma/' ), [ 'collie/bulma/', null ] );
+run_test( 'plain keyword with trailing slash is left to the loader',
+    request_result( [ 'gh' ], 'gh/' ), [ 'gh/', null ] );
+run_test( 'unknown keyword is untouched',
+    request_result( [ 'gh' ], 'nope/foo' ), [ 'nope/foo', null ] );
+run_test( 'prefix-n-shorten URL is untouched',
+    request_result( [ 'https:' ], 'https://example.com/x' ), [ 'https://example.com/x', null ] );
+run_test( 'prefixes longer than a keyword can be are skipped',
+    request_result( [ str_repeat( 'a', 200 ) ], str_repeat( 'a', 200 ) . '/x' ), [ str_repeat( 'a', 200 ) . '/x', null ] );
 
 // -----------------------------------------------------------------------------
 // Group: Option A (restore_templates)

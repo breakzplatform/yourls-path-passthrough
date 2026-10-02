@@ -49,7 +49,11 @@ If a template fails to parse or render, its actions are stripped and the link fa
 
 ## Rules
 
-- The first path segment is the keyword. If the long URL does not contain templates, the rest is joined to the long URL's path with a single slash (a trailing slash on either side doesn't produce `//`).
+- The longest leading run of path segments that is a keyword wins. Usually that is the
+  first segment, but with keywords that contain slashes (via a plugin such as
+  `yourls-forward-slash-in-urls`) and both `collie` and `collie/bulma` saved,
+  `sho.rt/collie/bulma/foo` goes to `collie/bulma` with `foo` passed through, and
+  `sho.rt/collie/other` goes to `collie` with `other`. If the long URL does not contain templates, the rest is joined to the long URL's path with a single slash (a trailing slash on either side doesn't produce `//`).
 - If the long URL contains templates, the extra path is not appended at the end; it only appears where the template specifies. Template links are evaluated even without an extra path.
 - The request's query string is merged into the long URL's query: request parameters
   replace long-URL parameters with the same name, the others are kept in order. The long
