@@ -395,7 +395,66 @@ if ( !function_exists( 'path_passthrough_restore_templates' ) ) {
         path_passthrough_restore_templates( 'https://example.com/', 'https://example.com/}' ),
         'https://example.com/'
     );
+    run_test( 'Restore quoted string argument',
+        path_passthrough_restore_templates( 'https://example.com/TrimPrefix/.Path', 'https://example.com/{{TrimPrefix "/" .Path}}' ),
+        'https://example.com/{{TrimPrefix "/" .Path}}'
+    );
+    run_test( 'Restore quoted string argument, spacing normalized outside the string',
+        path_passthrough_restore_templates( 'https://example.com/TrimPrefix/.Path', 'https://example.com/{{  TrimPrefix   "a b"  .Path }}' ),
+        'https://example.com/{{TrimPrefix "a b" .Path}}'
+    );
+    run_test( 'Restore several actions with strings',
+        path_passthrough_restore_templates( 'x', 'https://example.com/{{if .Path}}{{TrimSuffix "/" .Path}}{{else}}home{{end}}' ),
+        'https://example.com/{{if .Path}}{{TrimSuffix "/" .Path}}{{else}}home{{end}}'
+    );
+    run_test( 'Do not restore string with HTML characters',
+        path_passthrough_restore_templates( 'https://example.com/script', 'https://example.com/{{"<script>"}}' ),
+        'https://example.com/script'
+    );
+    run_test( 'Do not restore string with an escaped quote',
+        path_passthrough_restore_templates( 'https://example.com/ab', 'https://example.com/{{TrimPrefix "a\"b" .Path}}' ),
+        'https://example.com/ab'
+    );
+    run_test( 'Do not restore string with closing braces',
+        path_passthrough_restore_templates( 'https://example.com/x', 'https://example.com/{{x "}}"}}' ),
+        'https://example.com/x'
+    );
+    run_test( 'Do not restore unterminated string',
+        path_passthrough_restore_templates( 'https://example.com/x', 'https://example.com/{{TrimPrefix "/ .Path}}' ),
+        'https://example.com/x'
+    );
+    run_test( 'Do not restore string glued to a name',
+        path_passthrough_restore_templates( 'https://example.com/x', 'https://example.com/{{TrimPrefix"/" .Path}}' ),
+        'https://example.com/x'
+    );
+    run_test( 'restored string action falls back to append until functions exist',
+        safe_expand_no_throw( path_passthrough_restore_templates( 'x', 'https://example.com/{{TrimPrefix "/" .Path}}' ), 'test', '' ),
+        'https://example.com/test'
+    );
 }
+
+test_group( 'Display Templates' );
+
+run_test( 'display context shows the saved template',
+    path_passthrough_display_templates( 'https://example.com/if.Pathxend', 'https://example.com/{{if .Path}}x{{end}}', 'display' ),
+    'https://example.com/{{if .Path}}x{{end}}'
+);
+run_test( 'display context escapes quotes in string arguments',
+    path_passthrough_display_templates( 'x', 'https://example.com/{{TrimPrefix "/" .Path}}', 'display' ),
+    'https://example.com/{{TrimPrefix &quot;/&quot; .Path}}'
+);
+run_test( 'other contexts are untouched',
+    path_passthrough_display_templates( 'https://example.com/if.Path', 'https://example.com/{{if .Path}}', 'safe' ),
+    'https://example.com/if.Path'
+);
+run_test( 'URLs without templates are untouched',
+    path_passthrough_display_templates( 'https://example.com/a&#038;b', 'https://example.com/a&b', 'display' ),
+    'https://example.com/a&#038;b'
+);
+run_test( 'bare braces are not shown',
+    path_passthrough_display_templates( 'https://example.com/script', 'https://example.com/{{<script>}}', 'display' ),
+    'https://example.com/script'
+);
 
 echo "\nSummary: $tests_passed passed, $tests_failed failed.\n";
 if ( $tests_failed > 0 ) {

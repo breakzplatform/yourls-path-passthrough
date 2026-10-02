@@ -77,7 +77,9 @@ YOURLS strips `{`, `}` and spaces from long URLs on save (due to `yourls_esc_url
 
 The plugin hooks the `sanitize_url` filter and restores ONLY well-formed actions made of identifiers and `.Field` references. The restore is structural (valid template or not; validity checked at expansion; keeps links saved today working once v1.2 adds functions). Bare braces are never restored, and whitespace inside actions is normalized (edge spaces trimmed, one space between tokens). Admin output still escapes the long URL (`esc_url` for href, `esc_html` for text, `esc_attr` in the edit form).
 
-Known limit: quoted string arguments (needed by v1.2 functions like `TrimPrefix "/"`) are not restored yet.
+Double-quoted string arguments are restored too, so links saved for v1.2 functions such as `{{TrimPrefix "/" .Path}}` survive the save (until v1.2 they fall back to plain append, like any template with an unknown action). Strings hold printable ASCII only, without escape sequences and without `"`, `\`, `{`, `}`, `<`, `>`, `&`, `'` or backticks; anything else is not restored. Whitespace inside a string is kept as typed.
+
+The same restore runs on the `esc_url` filter in the `display` context, so the admin list, the stats page and its share box show the saved template (`{{if .Path}}`) instead of the stripped `if.Path`. Quotes in string arguments are shown as `&quot;` in that output.
 
 ## Hooks used
 
@@ -90,6 +92,7 @@ Known limit: quoted string arguments (needed by v1.2 functions like `TrimPrefix 
 - `redirect_location` (filter): appends the path and merges the query into that redirect
   only. Other redirects are untouched.
 - `sanitize_url` (filter): restores well-formed template actions that YOURLS stripped on save.
+- `esc_url` (filter, `display` context only): shows saved templates intact in the admin pages.
 
 The expanded URL goes through a `path_passthrough_location` filter
 (`$expanded, $original, $path, $query`) before it is sent.

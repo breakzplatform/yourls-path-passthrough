@@ -27,6 +27,7 @@ yourls_add_filter( 'redirect_location', 'path_passthrough_redirect_location' );
 // Restore well-formed `{{ ... }}` template actions after YOURLS strips '{' and '}' on save.
 // See the "Sanitizer" section of README.md for why this is safe.
 yourls_add_filter( 'sanitize_url', 'path_passthrough_restore_templates', 10, 2 );
+yourls_add_filter( 'esc_url', 'path_passthrough_display_templates', 10, 3 );
 
 // Same cap as yourls_sanitize_keyword() puts on custom keywords
 const PATH_PASSTHROUGH_MAX_KEYWORD_LENGTH = 199;
@@ -272,12 +273,16 @@ function path_passthrough_strip_template_actions( string $url ): string {
 
 /**
  * The character shape of a single `{{ ... }}` action, generic enough to match the tokenizer's
- * `{{ name arg arg… }}` form (identifiers and `.Field` references) without hardcoding the v1.1
- * vocabulary (.Path / if / else / end). v1.2 adding functions to the registry needs no change
- * here -- only unsupported *content* inside a well-formed action shape, which is rejected later
- * by path_passthrough_template_parse(), not by this regexp.
+ * `{{ name arg arg… }}` form (identifiers, `.Field` references and double-quoted strings)
+ * without hardcoding the v1.1 vocabulary (.Path / if / else / end). v1.2 adding functions to
+ * the registry needs no change here -- only unsupported *content* inside a well-formed action
+ * shape, which is rejected later by path_passthrough_template_parse(), not by this regexp.
+ *
+ * Strings are what `{{TrimPrefix "/" .Path}}` needs. They hold printable ASCII without escape
+ * sequences, and never a character that is special in HTML or that ends the action: no
+ * `"` `\` `{` `}` `<` `>` `&` `'` or backtick.
  */
-const PATH_PASSTHROUGH_ACTION_TOKEN = '(?:\.[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*)';
+const PATH_PASSTHROUGH_ACTION_TOKEN = '(?:\.[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*|"[^"\\\\{}<>&\'`\x00-\x1F\x7F-\xFF]*")';
 const PATH_PASSTHROUGH_ACTION_PATTERN = '/\{\{\s*(' . PATH_PASSTHROUGH_ACTION_TOKEN . '(?:\s+' . PATH_PASSTHROUGH_ACTION_TOKEN . ')*)\s*\}\}/';
 
 /**
@@ -293,8 +298,25 @@ const PATH_PASSTHROUGH_ACTION_PATTERN = '/\{\{\s*(' . PATH_PASSTHROUGH_ACTION_TO
  * $sanitized against $original to find where each action belongs.
  */
 function path_passthrough_restore_templates( string $sanitized, string $original ): string {
+    return path_passthrough_restore_actions( $sanitized, $original, 'redirection' );
+}
+
+/**
+ * Show saved templates intact where the admin pages print a long URL through
+ * yourls_esc_url() (the long URL links in the admin list, the stats page and its share box).
+ * Without this, `{{if .Path}}` is displayed as "if.Path". Display context only: redirects
+ * and saving never go through here.
+ */
+function path_passthrough_display_templates( string $escaped, string $original, string $context ): string {
+    if ( $context !== 'display' ) {
+        return $escaped;
+    }
+    return path_passthrough_restore_actions( $escaped, $original, 'display' );
+}
+
+function path_passthrough_restore_actions( string $escaped, string $original, string $context ): string {
     if ( !path_passthrough_template_has_actions( $original ) ) {
-        return $sanitized;
+        return $escaped;
     }
 
     $actions = [];
@@ -308,18 +330,21 @@ function path_passthrough_restore_templates( string $sanitized, string $original
     );
 
     if ( $actions === [] ) {
-        return $sanitized;
+        return $escaped;
     }
 
-    // Same sanitization yourls_sanitize_url() itself performs, minus the recursion into this
-    // filter that calling yourls_sanitize_url() again would cause.
-    $restored = yourls_esc_url( $placeholder_source, 'redirection' );
+    // Same escaping yourls_esc_url() itself performs. The placeholder source has no "{{", so
+    // the esc_url and sanitize_url filters (this plugin included) leave it alone.
+    $restored = yourls_esc_url( $placeholder_source, $context );
 
     foreach ( $actions as $i => $action ) {
         // Whitespace inside "{{ }}" was stripped by esc_url() too (it's not in the allowed
         // character set), so tokens are rejoined with a single space rather than reusing
         // whatever spacing the user originally typed.
-        $normalized = '{{' . implode( ' ', preg_split( '/\s+/', trim( $action ) ) ) . '}}';
+        $normalized = '{{' . implode( ' ', path_passthrough_template_tokenize( $action ) ) . '}}';
+        if ( $context === 'display' ) {
+            $normalized = str_replace( '"', '&quot;', $normalized );
+        }
         $restored = str_replace( '~pptpl' . $i . '~', $normalized, $restored );
     }
 
