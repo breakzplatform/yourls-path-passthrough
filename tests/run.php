@@ -319,17 +319,17 @@ function request_result( array $keywords, string $request ): array {
 run_test( 'first segment is the keyword',
     request_result( [ 'gh' ], 'gh/tailscale/golink' ), [ 'gh', 'tailscale/golink' ] );
 run_test( 'longest keyword wins over a shorter one',
-    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma/foo' ), [ 'collie/bulma', 'foo' ] );
+    request_result( [ 'team', 'team/project' ], 'team/project/foo' ), [ 'team/project', 'foo' ] );
 run_test( 'longest keyword wins regardless of save order',
-    request_result( [ 'collie/bulma', 'collie' ], 'collie/bulma/foo/bar' ), [ 'collie/bulma', 'foo/bar' ] );
+    request_result( [ 'team/project', 'team' ], 'team/project/foo/bar' ), [ 'team/project', 'foo/bar' ] );
 run_test( 'shorter keyword still used when the longer one does not match',
-    request_result( [ 'collie', 'collie/bulma' ], 'collie/other/foo' ), [ 'collie', 'other/foo' ] );
+    request_result( [ 'team', 'team/project' ], 'team/other/foo' ), [ 'team', 'other/foo' ] );
 run_test( 'deep slash keyword',
     request_result( [ 'a', 'a/b/c' ], 'a/b/c/d' ), [ 'a/b/c', 'd' ] );
 run_test( 'exact slash keyword is left to the loader',
-    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma' ), [ 'collie/bulma', null ] );
+    request_result( [ 'team', 'team/project' ], 'team/project' ), [ 'team/project', null ] );
 run_test( 'slash keyword with trailing slash is left to the loader',
-    request_result( [ 'collie', 'collie/bulma' ], 'collie/bulma/' ), [ 'collie/bulma/', null ] );
+    request_result( [ 'team', 'team/project' ], 'team/project/' ), [ 'team/project/', null ] );
 run_test( 'plain keyword with trailing slash is left to the loader',
     request_result( [ 'gh' ], 'gh/' ), [ 'gh/', null ] );
 run_test( 'unknown keyword is untouched',
