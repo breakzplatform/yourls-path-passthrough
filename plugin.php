@@ -106,8 +106,8 @@ function path_passthrough_get_request( $request ) {
  * YOURLS passes action arguments as a single array: [ $url, $keyword ].
  *
  * A plain keyword request (no extra path segment) never touches path_passthrough_get_request(),
- * so it never sets up a state above. But its long URL can still contain a template (rule 3 of
- * the spec: "sho.rt/barsa" alone must also be evaluated), which this action is the only hook
+ * so it never sets up a state above. But its long URL can still contain a template (a plain
+ * "sho.rt/notes" must also be evaluated), which this action is the only hook
  * that sees before the Location header is built. So: no state yet + a template in $url is armed
  * here too, with an empty path.
  */

@@ -28,10 +28,10 @@ Then activate it on the Plugins page. There are no settings.
 
 You can place `{{.Path}}` templates in the long URL to control exactly where the passed-through path is injected, instead of just appending it to the end.
 
-| Request | Keyword `barsa` → `https://barsa.example/{{if .Path}}?link=/{{.Path}}{{end}}` |
+| Request | Keyword `notes` → `https://notes.example/{{if .Path}}?link=/{{.Path}}{{end}}` |
 |---|---|
-| `sho.rt/barsa` | `https://barsa.example/` |
-| `sho.rt/barsa/50-ref/winston-avisos` | `https://barsa.example/?link=/50-ref/winston-avisos` |
+| `sho.rt/notes` | `https://notes.example/` |
+| `sho.rt/notes/projects/roadmap` | `https://notes.example/?link=/projects/roadmap` |
 
 | Request | Keyword `search` → `https://example.com/search?q={{if .Path}}{{.Path}}{{else}}default{{end}}&lang=en#top` |
 |---|---|
@@ -59,7 +59,7 @@ If a template fails to parse or render, its actions are stripped and the link fa
   replace long-URL parameters with the same name, the others are kept in order. The long
   URL's fragment is kept.
 - For non-template links, only requests with extra path are touched. `sho.rt/gh` and `sho.rt/gh?x=1` behave exactly
-  as in plain YOURLS (which drops the query string). Template links, however, also merge the request query string when there is NO extra path (e.g. `sho.rt/barsa?x=1`).
+  as in plain YOURLS (which drops the query string). Template links, however, also merge the request query string when there is NO extra path (e.g. `sho.rt/notes?x=1`).
 - Control characters (`\x00`–`\x1F`, `\x7F`) are stripped from the path, query, and rendered output.
 - If the whole request is itself a keyword or a YOURLS page (for keywords that contain
   slashes), it wins over passthrough.

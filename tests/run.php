@@ -207,13 +207,13 @@ run_test( 'template present => path NOT appended at end',
     safe_expand( 'https://example.com/{{if .Path}}has_path{{end}}', 'test', '' ),
     'https://example.com/has_path'
 );
-run_test( 'the spec\'s barsa example EXACTLY as in the spec, with empty path',
-    safe_expand( 'https://barsa.example/{{if .Path}}?link=/{{.Path}}{{end}}', '', '' ),
-    'https://barsa.example/'
+run_test( 'notes example from the README, with empty path',
+    safe_expand( 'https://notes.example/{{if .Path}}?link=/{{.Path}}{{end}}', '', '' ),
+    'https://notes.example/'
 );
-run_test( 'the spec\'s barsa example EXACTLY as in the spec, with path \'50-ref/winston-bot-avisos\'',
-    safe_expand( 'https://barsa.example/{{if .Path}}?link=/{{.Path}}{{end}}', '50-ref/winston-bot-avisos', '' ),
-    'https://barsa.example/?link=/50-ref/winston-bot-avisos'
+run_test( 'notes example from the README, with a nested path',
+    safe_expand( 'https://notes.example/{{if .Path}}?link=/{{.Path}}{{end}}', 'projects/roadmap', '' ),
+    'https://notes.example/?link=/projects/roadmap'
 );
 run_test( 'template with complex URL and fragments',
     safe_expand( 'https://example.com/{{.Path}}#hash', 'x', '' ),
