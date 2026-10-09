@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Keywords that contain slashes pass through to the longest matching keyword, so `collie/bulma/foo` goes to `collie/bulma` when it exists, instead of to `collie`.
+- Keywords that contain slashes pass through to the longest matching keyword, so `team/project/foo` goes to `team/project` when it exists, instead of to `team`.
 - Saved templates are shown intact in the admin list and stats page instead of being displayed with their braces and spaces stripped.
 
 ## [1.1.0] - 2026-09-21
