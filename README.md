@@ -108,6 +108,14 @@ The expanded URL goes through a `path_passthrough_location` filter
 
 See [CHANGELOG.md](CHANGELOG.md).
 
+## Support
+
+If this plugin saves you time, you can support it:
+
+- [Pix](https://pix.joseli.to), key `apoie@pix.joseli.to`
+- [Buy Me a Coffee](https://buymeacoffee.com/joselito)
+- [GitHub Sponsors](https://github.com/sponsors/breakzplatform)
+
 ## License
 
 MIT. Contact: dev@joseli.to.
