@@ -13,6 +13,8 @@ redirects: anything after the keyword is passed through to the long URL.
 |---|---|
 | `sho.rt/search/docs?q=yourls` | `https://example.com/search/docs?lang=en&q=yourls#top` |
 
+![The YOURLS admin list with three links (gh, wiki, and maps, whose long URL holds a {{.Path}} template), and curl showing where sho.rt/gh/tailscale/golink, sho.rt/wiki/URL_shortening, and sho.rt/maps/Lisbon redirect.](docs/screenshot.png)
+
 Tested on YOURLS 1.10.6 with PHP 8.5. Requires YOURLS 1.10.5+ and PHP 8.1+.
 
 ## Install
