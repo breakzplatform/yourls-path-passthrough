@@ -3,7 +3,7 @@
 Plugin Name: Path Passthrough
 Plugin URI: https://github.com/breakzplatform/yourls-path-passthrough
 Description: golink-style redirects: <code>sho.rt/foo/bar?x=1</code> goes to the long URL of <code>foo</code> with <code>/bar</code> appended and the query string merged. Long URLs can also use golink-style <code>{{.Path}}</code> destination templates.
-Version: 1.1.1
+Version: 1.2.0
 Requires YOURLS: 1.10.5
 Requires PHP: 8.1
 Author: Joselito

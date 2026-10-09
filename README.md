@@ -102,7 +102,6 @@ The expanded URL goes through a `path_passthrough_location` filter
 ## Caveats
 
 - **301 caching:** YOURLS answers short URLs with `301 Moved Permanently`, which browsers cache. After you change a link's target, browsers that already followed it may keep going to the old one until their cache expires. That applies to passthrough URLs as much as to plain keywords. To avoid it, install a plugin that changes the redirect: [302-Instead](https://github.com/EpicPilgrim/302-instead) sends `302` instead of `301` ([fork with more options](https://github.com/timcrockford/302-instead)), and [Caching Disabled for Redirects](https://github.com/dgw/yourls-shorturl-no-cache) sends no-cache headers.
-- **Do not create an `uninstall.php` file:** In setups where this plugin is pinned as active (like the `ts-golink-yourls` stack), clicking "Deactivate" in the admin panel will run the uninstallation script and wipe all plugin data without actually deactivating the plugin.
 
 ## Changelog
 
