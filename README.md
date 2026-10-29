@@ -112,7 +112,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 If this plugin saves you time, you can support it:
 
 - [Pix](https://pix.joseli.to), key `apoie@pix.joseli.to`
-- [Card (Mercado Pago)](https://link.mercadopago.com.br/breakzplatform)
+- [Mercado Pago](https://link.mercadopago.com.br/breakzplatform)
 - [Buy Me a Coffee](https://buymeacoffee.com/joselito)
 - [GitHub Sponsors](https://github.com/sponsors/breakzplatform)
 
